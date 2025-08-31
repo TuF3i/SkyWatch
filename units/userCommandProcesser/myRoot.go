@@ -1,5 +1,7 @@
 package userCommandProcesser
 
+import "time"
+
 type UserCmdCatcher interface {
 	RevCatcher(data *UserCmdProcesser, raw *RawData)
 }
@@ -9,15 +11,18 @@ type UserCmdProcesser struct {
 	NoIcmp      bool
 	UseTopPorts bool
 	Thread      int
-	TimeOut     int
+	TimeOut     time.Duration
 }
 
 type RawData struct {
+	Args        []string
+	NArg        int
+	NFlag       int
 	IPList      string
 	IP          string
 	Port        string
-	NoIcmp      string
-	UseTopPorts string
+	NoIcmp      bool
+	UseTopPorts bool
 	Thread      int
 	TimeOut     int
 }

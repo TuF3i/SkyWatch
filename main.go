@@ -1,7 +1,14 @@
 package main
 
-import "SkyWatch/units/userCommandProcesser"
+import (
+	"SkyWatch/units/scanner"
+	"SkyWatch/units/userCommandProcesser"
+	"fmt"
+)
 
 func main() {
-	userCommandProcesser.RunCatcher()
+	source := userCommandProcesser.RunCatcher()
+	res := scanner.RunScanner(source)
+	fmt.Printf("%v", source)
+	fmt.Printf("%v", res)
 }
