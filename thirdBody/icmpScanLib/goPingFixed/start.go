@@ -1,11 +1,11 @@
 package GoPing
 
 import (
-
-	"gitee.com/liumou_site/logger"
+	"fmt"
 	"net"
 	"time"
-	"fmt"
+
+	"gitee.com/liumou_site/logger"
 )
 
 // Ping 方法用于向远程主机发送ping请求。
@@ -45,7 +45,7 @@ func (pg *PingSet) Ping(count int) error {
 			// 如果错误是超时错误，则尝试重新连接远程主机。
 			if opt, ok := r.Error.(*net.OpError); ok && opt.Timeout() {
 				logger.Error("From %s reply: TimeOut", pg.Addr)
-				logger.Info("Set Timeout: ", pg.Timeout)
+				//logger.Info("Set Timeout: ", pg.Timeout)
 				if err := pg.Dail(); err != nil {
 					logger.Error("Not found remote host")
 					return r.Error
