@@ -7,24 +7,24 @@ import (
 )
 
 func (root *icmpScanner) prepareTaskData(data *userCommandProcesser.UserCmdProcesser) {
+
+	/* 初始化ICMP扫描的所有参数 */
+
 	root.IPList = data.IPList
 	root.Thread = data.Thread
 	root.TimeOut = data.TimeOut
-	root.Task = make(chan string)   //, len(root.IPList))
-	root.Result = make(chan string) //, len(root.IPList))
+	root.Task = make(chan string)
+	root.Result = make(chan string)
 	root.AliveHostCount = 0
 	root.AliveHost = make([]string, 0)
 	root.Wg = sync.WaitGroup{}
 }
 
 func (root *icmpScanner) initWorkingThread() {
-	go func() {
-		for i := 0; i < root.Thread; i++ {
-			root.Wg.Add(1)
-			go root.worker()
-			//go worker(tasks, results, &wg, *timeout)
-		}
-	}()
+	for i := 0; i < root.Thread; i++ {
+		root.Wg.Add(1)
+		go root.worker()
+	}
 }
 
 func (root *icmpScanner) worker() {
@@ -43,8 +43,9 @@ func (root *icmpScanner) publishTask() {
 		for _, ipAddr := range root.IPList {
 			root.Task <- ipAddr
 		}
-		//root.Wg.Wait()
 		close(root.Task)
+		//root.Wg.Wait()
+		//close(root.Task)
 	}()
 
 }
@@ -62,14 +63,10 @@ func (root *icmpScanner) Scanner(data *userCommandProcesser.UserCmdProcesser, re
 	root.publishTask()
 	root.waitAllTaskFinish()
 
-	//time.Sleep(5 * time.Second)
-	//root.Wg.Wait()
 	for ipaddr := range root.Result {
 		root.AliveHostCount++
 		root.AliveHost = append(root.AliveHost, ipaddr)
 	}
-
-	//root.waitAllTaskFinish()
 
 	res.aliveHosts = root.AliveHost
 	res.aliveHostCount = root.AliveHostCount

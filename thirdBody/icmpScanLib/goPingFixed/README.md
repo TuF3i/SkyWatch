@@ -1,94 +1,146 @@
-# GoPing
+# Deprecated
 
-## 介绍
-使用go实现的ICMP检测模块
-## 安装
+Due to lack of maintainers and access, this library is no longer maintained.
+There is a new actively maintained fork: https://github.com/prometheus-community/pro-bing
 
-```shell
-go get gitee.com/liumou_site/GoPing
-```
+# go-ping
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/go-ping/ping)](https://pkg.go.dev/github.com/go-ping/ping)
+[![Circle CI](https://circleci.com/gh/go-ping/ping.svg?style=svg)](https://circleci.com/gh/go-ping/ping)
 
-## 使用
+A simple but powerful ICMP echo (ping) library for Go, inspired by
+[go-fastping](https://github.com/tatsushid/go-fastping).
 
-
-### 单独ping
+Here is a very simple example that sends and receives three packets:
 
 ```go
-package main
+pinger, err := ping.NewPinger("www.google.com")
+if err != nil {
+	panic(err)
+}
+pinger.Count = 3
+err = pinger.Run() // Blocks until finished.
+if err != nil {
+	panic(err)
+}
+stats := pinger.Statistics() // get send/receive/duplicate/rtt stats
+```
 
-import 	(
-	"fmt"
-    gp "gitee.com/liumou_site/GoPing"
-)
+Here is an example that emulates the traditional UNIX ping command:
 
-func main()  {
-	// 初始化一个Ping实例，用于对指定的域名进行ping操作
-	// 参数"baidu.com"是目标域名，8是ping的次数，Data是ping的数据包内容
-	ping, err := gp.New("baidu.com", 3)
-	// 如果初始化过程中出现错误，则输出错误信息并终止程序
-	if err != nil {
-		fmt.Println(err)
-		return
+```go
+pinger, err := ping.NewPinger("www.google.com")
+if err != nil {
+	panic(err)
+}
+
+// Listen for Ctrl-C.
+c := make(chan os.Signal, 1)
+signal.Notify(c, os.Interrupt)
+go func() {
+	for _ = range c {
+		pinger.Stop()
 	}
-	// 确保在函数返回前关闭ping实例，释放相关资源
-	defer func(ping *gp.PingSet) {
-		err := ping.Close()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}(ping)
-	// 执行ping操作，这里指定ping的次数为5
-	err = ping.Ping(5)
-	if err != nil {
-		fmt.Println(err)
-		return 
-	}
-	// 输出ping操作的总次数，这里查询的是次数6的ping操作次数
-	fmt.Println(ping.PingCount(6))
+}()
+
+pinger.OnRecv = func(pkt *ping.Packet) {
+	fmt.Printf("%d bytes from %s: icmp_seq=%d time=%v\n",
+		pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt)
+}
+
+pinger.OnDuplicateRecv = func(pkt *ping.Packet) {
+	fmt.Printf("%d bytes from %s: icmp_seq=%d time=%v ttl=%v (DUP!)\n",
+		pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt, pkt.Ttl)
+}
+
+pinger.OnFinish = func(stats *ping.Statistics) {
+	fmt.Printf("\n--- %s ping statistics ---\n", stats.Addr)
+	fmt.Printf("%d packets transmitted, %d packets received, %v%% packet loss\n",
+		stats.PacketsSent, stats.PacketsRecv, stats.PacketLoss)
+	fmt.Printf("round-trip min/avg/max/stddev = %v/%v/%v/%v\n",
+		stats.MinRtt, stats.AvgRtt, stats.MaxRtt, stats.StdDevRtt)
+}
+
+fmt.Printf("PING %s (%s):\n", pinger.Addr(), pinger.IPAddr())
+err = pinger.Run()
+if err != nil {
+	panic(err)
 }
 ```
 
-### 并发ping
+It sends ICMP Echo Request packet(s) and waits for an Echo Reply in
+response. If it receives a response, it calls the `OnRecv` callback
+unless a packet with that sequence number has already been received,
+in which case it calls the `OnDuplicateRecv` callback. When it's
+finished, it calls the `OnFinish` callback.
 
-```go
-package main
+For a full ping example, see
+[cmd/ping/ping.go](https://github.com/go-ping/ping/blob/master/cmd/ping/ping.go).
 
-import (
-	gp "gitee.com/liumou_site/GoPing"
-	"gitee.com/liumou_site/gns"
-	"gitee.com/liumou_site/logger"
-)
-
-func main() {
-
-	// 初始化一个IP子网
-	// 获取本机使用的IP地址
-	sub := gns.NewIp()
-	ip, err := sub.GetUseIP()
-	if err != nil {
-		logger.Error(err)
-		return
-	}
-	// 通过本机使用的IP地址 生成一个IP列表，用于后续的并发检测
-	ips, _ := gns.IpGenerateList(gns.IpCutSubnet(ip), 1, 10)
-	// 创建一个并发处理实例
-	p := gp.NewConcurrency(ips)
-	// 启动并发检测
-	p.Start()
-	// 遍历结果，输出每个IP的在线/离线状态
-	for k, v := range p.Result {
-		if v {
-			logger.Info(k, " : 在线")
-		} else {
-			logger.Info(k, " : 离线")
-		}
-	}
-	// 输出成功的数量、失败的数量以及总共处理的IP数量
-	logger.Info("成功：", p.Success, " 失败：", p.Fail, " 总数：", p.Total)
-}
+## Installation
 
 ```
+go get -u github.com/go-ping/ping
+```
 
-测试效果
+To install the native Go ping executable:
 
-![批量](images/Concurrency.png)
+```bash
+go get -u github.com/go-ping/ping/...
+$GOPATH/bin/ping
+```
+
+## Supported Operating Systems
+
+### Linux
+This library attempts to send an "unprivileged" ping via UDP. On Linux,
+this must be enabled with the following sysctl command:
+
+```
+sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"
+```
+
+If you do not wish to do this, you can call `pinger.SetPrivileged(true)`
+in your code and then use setcap on your binary to allow it to bind to
+raw sockets (or just run it as root):
+
+```
+setcap cap_net_raw=+ep /path/to/your/compiled/binary
+```
+
+See [this blog](https://sturmflut.github.io/linux/ubuntu/2015/01/17/unprivileged-icmp-sockets-on-linux/)
+and the Go [x/net/icmp](https://godoc.org/golang.org/x/net/icmp) package
+for more details.
+
+### Windows
+
+You must use `pinger.SetPrivileged(true)`, otherwise you will receive
+the following error:
+
+```
+socket: The requested protocol has not been configured into the system, or no implementation for it exists.
+```
+
+Despite the method name, this should work without the need to elevate
+privileges and has been tested on Windows 10. Please note that accessing
+packet TTL values is not supported due to limitations in the Go
+x/net/ipv4 and x/net/ipv6 packages.
+
+### Plan 9 from Bell Labs
+
+There is no support for Plan 9. This is because the entire `x/net/ipv4` 
+and `x/net/ipv6` packages are not implemented by the Go programming 
+language.
+
+## Maintainers and Getting Help:
+
+This repo was originally in the personal account of
+[sparrc](https://github.com/sparrc), but is now maintained by the
+[go-ping organization](https://github.com/go-ping).
+
+For support and help, you usually find us in the #go-ping channel of
+Gophers Slack. See https://invite.slack.golangbridge.org/ for an invite
+to the Gophers Slack org.
+
+## Contributing
+
+Refer to [CONTRIBUTING.md](https://github.com/go-ping/ping/blob/master/CONTRIBUTING.md)
