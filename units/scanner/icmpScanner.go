@@ -13,8 +13,8 @@ func (root *icmpScanner) prepareTaskData(data *userCommandProcesser.UserCmdProce
 	root.IPList = data.IPList
 	root.Thread = data.Thread
 	root.TimeOut = data.TimeOut
-	root.Task = make(chan string)
-	root.Result = make(chan string)
+	root.Task = make(chan struct{ ipAddr string })
+	root.Result = make(chan struct{ ipAddr string })
 	root.AliveHostCount = 0
 	root.AliveHost = make([]string, 0)
 	root.Wg = sync.WaitGroup{}
@@ -30,18 +30,19 @@ func (root *icmpScanner) initWorkingThread() {
 func (root *icmpScanner) worker() {
 	defer root.Wg.Done()
 
-	for ipaddr := range root.Task {
-		ifOnline, _ := icmpScanLib.IsHostAlive(ipaddr)
+	for task := range root.Task {
+		ifOnline, _ := icmpScanLib.IsHostAlive(task.ipAddr)
 		if ifOnline {
-			root.Result <- ipaddr
+			root.Result <- struct{ ipAddr string }{ipAddr: task.ipAddr}
 		}
 	}
 }
 
 func (root *icmpScanner) publishTask() {
 	go func() {
+
 		for _, ipAddr := range root.IPList {
-			root.Task <- ipAddr
+			root.Task <- struct{ ipAddr string }{ipAddr: ipAddr}
 		}
 		close(root.Task)
 		//root.Wg.Wait()
@@ -63,9 +64,9 @@ func (root *icmpScanner) Scanner(data *userCommandProcesser.UserCmdProcesser, re
 	root.publishTask()
 	root.waitAllTaskFinish()
 
-	for ipaddr := range root.Result {
+	for result := range root.Result {
 		root.AliveHostCount++
-		root.AliveHost = append(root.AliveHost, ipaddr)
+		root.AliveHost = append(root.AliveHost, result.ipAddr)
 	}
 
 	res.aliveHosts = root.AliveHost

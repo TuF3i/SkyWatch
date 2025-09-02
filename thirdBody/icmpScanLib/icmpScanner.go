@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var _PING_COUNT int = 3
+var _PING_COUNT int = 1
 var _PING_SIZE int = 1400
 var _PING_TIMEOUT time.Duration = time.Second * 5
 
