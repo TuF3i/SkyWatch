@@ -1,7 +1,7 @@
 package vscan
 
 import (
-	"Xcan/thirdbody/service_lib/proberbyte"
+	"SkyWatch/thirdBody/serviceScanLib/proberbyte"
 	"bytes"
 	"compress/gzip"
 	"crypto/tls"
@@ -14,7 +14,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/axgle/mahonia"
@@ -934,74 +933,57 @@ func grabResponse(addr string, data []byte) ([]byte, error) {
 	return response, nil
 }
 
-func (v *VScan) Tagetsacn(addr []string, thread int) {
+func (v *VScan) Tagetsacn(targetIP string) string {
 	var info string
-	var wg sync.WaitGroup
-	mutex := &sync.Mutex{}
-	limiter := make(chan struct{}, thread)
-	aliveHost := make(chan string, thread/2)
-	go func() {
-		for s := range aliveHost {
-			fmt.Println(s)
-		}
-	}()
-	for _, targetIP := range addr {
-		wg.Add(1)
-		limiter <- struct{}{}
-		go func(targetIP string) {
-			defer wg.Done()
-			result, err := v.Explore(targetIP)
-			mutex.Lock()
-			if err == nil {
-				if result.Service.Name == "http" {
-					banner := result.Service.Banner
-					if len(banner) > 30 {
-						banner = banner[:30] + "..."
-					}
-					info = banner
-					if result.Service.Extras.Version != "" {
-						info = result.Service.Extras.Version + " - " + info
-					}
-					if result.Service.Extras.VendorProduct != "" {
-						info = result.Service.Extras.VendorProduct + " - " + info
-					}
-					if result.Service.Extras.Sign != "" {
-						info = result.Service.Extras.Sign + " - " + info
-					}
-				} else if result.Service.Name == "microsoft-ds" && (strings.Contains(result.Service.Banner, "hostname") || strings.Contains(result.Service.Banner, "domain")) {
-					info = result.Service.Extras.VendorProduct + " - " + result.Service.Name + " - " + result.Service.Banner
-				} else if result.Service.Name == "ssl-ms-rdp" {
-					info = result.Service.Name
-				} else {
-					info = result.Service.Name
-					if result.Service.Banner != "" && result.Service.Banner != "." && result.Service.Banner != ".@." {
-						info = result.Service.Name + " - " + result.Service.Banner
-					}
-					if result.Service.Extras != (Extras{}) {
-						if result.Service.Extras.Version != "" {
-							info = info + " - " + result.Service.Extras.Version
-						}
-						if result.Service.Extras.VendorProduct != "" {
-							info = result.Service.Extras.VendorProduct + " - " + info
-						}
-						if result.Service.Extras.Sign != "" {
-							info = result.Service.Extras.Sign + " - " + info
-						}
-					}
-				}
-				if info == "" {
-					info = "unknown"
-				}
-
-				fmt.Printf("%s:%d (%s)\n", result.IP, result.Port, info)
-
-				mutex.Unlock()
+	result, err := v.Explore(targetIP)
+	//mutex.Lock()
+	if err == nil {
+		if result.Service.Name == "http" {
+			banner := result.Service.Banner
+			if len(banner) > 30 {
+				banner = banner[:30] + "..."
 			}
-			<-limiter
-		}(targetIP)
+			info = banner
+			if result.Service.Extras.Version != "" {
+				info = result.Service.Extras.Version + " - " + info
+			}
+			if result.Service.Extras.VendorProduct != "" {
+				info = result.Service.Extras.VendorProduct + " - " + info
+			}
+			if result.Service.Extras.Sign != "" {
+				info = result.Service.Extras.Sign + " - " + info
+			}
+		} else if result.Service.Name == "microsoft-ds" && (strings.Contains(result.Service.Banner, "hostname") || strings.Contains(result.Service.Banner, "domain")) {
+			info = result.Service.Extras.VendorProduct + " - " + result.Service.Name + " - " + result.Service.Banner
+		} else if result.Service.Name == "ssl-ms-rdp" {
+			info = result.Service.Name
+		} else {
+			info = result.Service.Name
+			if result.Service.Banner != "" && result.Service.Banner != "." && result.Service.Banner != ".@." {
+				info = result.Service.Name + " - " + result.Service.Banner
+			}
+			if result.Service.Extras != (Extras{}) {
+				if result.Service.Extras.Version != "" {
+					info = info + " - " + result.Service.Extras.Version
+				}
+				if result.Service.Extras.VendorProduct != "" {
+					info = result.Service.Extras.VendorProduct + " - " + info
+				}
+				if result.Service.Extras.Sign != "" {
+					info = result.Service.Extras.Sign + " - " + info
+				}
+			}
+		}
+		if info == "" {
+			info = "unknown"
+		}
+
+		fmt.Printf("%s:%d (%s)\n", result.IP, result.Port, info)
+
 	}
-	wg.Wait()
-	close(aliveHost)
+
+	return info
+
 }
 
 func (v *VScan) Init() {
@@ -1012,14 +994,9 @@ func (v *VScan) Init() {
 	v.parseProbesToMapKName(v.Probes)
 }
 
-func GetProbes(aliveHosts []string) {
+func GetProbes(aliveHosts string) string {
 	v := VScan{}
 	v.Init()
-	thread := 20
-	if len(aliveHosts) > 50 {
-		thread = len(aliveHosts) / 2
-	}
 
-	v.Tagetsacn(aliveHosts, thread)
+	return v.Tagetsacn(aliveHosts)
 }
-

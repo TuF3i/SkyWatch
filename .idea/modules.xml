@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/SkyWatch.iml" filepath="$PROJECT_DIR$/.idea/SkyWatch.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../Xcan/.idea/Xcan.iml" filepath="$PROJECT_DIR$/../../Xcan/.idea/Xcan.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../serviceScanLib/.idea/serviceScanLib.iml" filepath="$PROJECT_DIR$/../../serviceScanLib/.idea/serviceScanLib.iml" />
     </modules>
   </component>
 </project>

@@ -13,8 +13,8 @@ func (root *icmpScanner) prepareTaskData(data *userCommandProcesser.UserCmdProce
 	root.IPList = data.IPList
 	root.Thread = data.Thread
 	root.TimeOut = data.TimeOut
-	root.Task = make(chan struct{ ipAddr string })
-	root.Result = make(chan struct{ ipAddr string })
+	root.Task = make(chan icmpTaskUnity)
+	root.Result = make(chan icmpResultUnity)
 	root.AliveHostCount = 0
 	root.AliveHost = make([]string, 0)
 	root.Wg = sync.WaitGroup{}
@@ -33,7 +33,7 @@ func (root *icmpScanner) worker() {
 	for task := range root.Task {
 		ifOnline, _ := icmpScanLib.IsHostAlive(task.ipAddr)
 		if ifOnline {
-			root.Result <- struct{ ipAddr string }{ipAddr: task.ipAddr}
+			root.Result <- icmpResultUnity{ipAddr: task.ipAddr}
 		}
 	}
 }
@@ -42,7 +42,7 @@ func (root *icmpScanner) publishTask() {
 	go func() {
 
 		for _, ipAddr := range root.IPList {
-			root.Task <- struct{ ipAddr string }{ipAddr: ipAddr}
+			root.Task <- icmpTaskUnity{ipAddr: ipAddr}
 		}
 		close(root.Task)
 		//root.Wg.Wait()

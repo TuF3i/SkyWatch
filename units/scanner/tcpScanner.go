@@ -14,14 +14,8 @@ func (root *tcpScanner) prepareTaskData(data *userCommandProcesser.UserCmdProces
 	root.Port = data.Port
 	root.Thread = data.Thread
 	root.TimeOut = data.TimeOut
-	root.Task = make(chan struct {
-		ipAddr string
-		port   int
-	})
-	root.Result = make(chan struct {
-		ipAddr string
-		port   int
-	})
+	root.Task = make(chan tcpTaskUnity)
+	root.Result = make(chan tcpResultUnity)
 	root.openPort = make(map[string][]int)
 	root.Wg = sync.WaitGroup{}
 }
@@ -39,10 +33,7 @@ func (root *tcpScanner) worker() {
 	for task := range root.Task {
 		ifOpen, _ := tcpScanLib.TCPPortScan(task.ipAddr, task.port, root.TimeOut)
 		if ifOpen {
-			root.Result <- struct {
-				ipAddr string
-				port   int
-			}{ipAddr: task.ipAddr, port: task.port}
+			root.Result <- tcpResultUnity{ipAddr: task.ipAddr, port: task.port}
 		}
 	}
 }
@@ -51,10 +42,7 @@ func (root *tcpScanner) publishTask() {
 	go func() {
 		for _, ipAddr := range root.IPList {
 			for _, port := range root.Port {
-				root.Task <- struct {
-					ipAddr string
-					port   int
-				}{ipAddr: ipAddr, port: port}
+				root.Task <- tcpTaskUnity{ipAddr: ipAddr, port: port}
 			}
 		}
 		close(root.Task)
