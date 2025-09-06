@@ -6,14 +6,20 @@ import (
 
 func RunScanner(data *userCommandProcesser.UserCmdProcesser) *ScannerRoot {
 	root := ScannerRoot{}
-
-	Scanner := []Scanner{
-		&icmpScanner{},
+	var Scanner_ []Scanner
+	normalFunc := []Scanner{
 		&tcpScanner{},
 		&serviceScanner{},
 	}
 
-	for _, r := range Scanner {
+	if data.NoIcmp {
+		Scanner_ = append(Scanner_, normalFunc...)
+		root.AliveHosts = data.IPList
+	} else {
+		Scanner_ = append([]Scanner{&icmpScanner{}}, normalFunc...)
+	}
+
+	for _, r := range Scanner_ {
 		r.Scanner(data, &root)
 	}
 

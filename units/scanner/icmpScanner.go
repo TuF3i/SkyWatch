@@ -69,7 +69,7 @@ func (root *icmpScanner) Scanner(data *userCommandProcesser.UserCmdProcesser, re
 		root.AliveHost = append(root.AliveHost, result.ipAddr)
 	}
 
-	res.aliveHosts = root.AliveHost
-	res.aliveHostCount = root.AliveHostCount
+	res.AliveHosts = root.AliveHost
+	res.AliveHostCount = root.AliveHostCount
 
 }

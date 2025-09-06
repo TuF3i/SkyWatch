@@ -4,6 +4,7 @@ import (
 	"SkyWatch/thirdBody/ipProcesser"
 	"SkyWatch/thirdBody/portProcesser"
 	"flag"
+	"os"
 	"time"
 )
 
@@ -11,6 +12,7 @@ func (myRoot *CommandReceiver) CommandRev(raw *RawData) *RawData {
 	var Args = flag.Args()
 	var NArg = flag.NArg()
 	var NFlag = flag.NFlag()
+	var IfArgs = os.Args
 
 	var inputIP = flag.String("ip", "", "Input Your IP")
 	var inputIPListc = flag.String("ip_list", "", "Input Your IP_List Path")
@@ -22,6 +24,7 @@ func (myRoot *CommandReceiver) CommandRev(raw *RawData) *RawData {
 	flag.Parse()
 
 	return &RawData{
+		IfArgs:      IfArgs,
 		Args:        Args,
 		NArg:        NArg,
 		NFlag:       NFlag,
@@ -78,6 +81,24 @@ func (myRoot *IfIcmp) RevCatcher(data *UserCmdProcesser, raw *RawData) {
 
 func (myRoot *IfTopPorts) RevCatcher(data *UserCmdProcesser, raw *RawData) {
 
-	data.UseTopPorts = raw.UseTopPorts
+	GetCommonPorts := func() []int {
+		return []int{
+			20, 21, 22, 23, 25, 53, 67, 68, 69, 80,
+			110, 119, 123, 135, 137, 138, 139, 143, 161, 162,
+			389, 443, 445, 465, 514, 515, 587, 631, 636, 993,
+			995, 1080, 1194, 1433, 1434, 1521, 1723, 1863, 2049, 2082,
+			2083, 2086, 2087, 2095, 2096, 2222, 2375, 2376, 3000, 3128,
+			3306, 3389, 3690, 4000, 4040, 4430, 4500, 4567, 4662, 4672,
+			4899, 5000, 5001, 5004, 5005, 5050, 5060, 5070, 5100, 5190,
+			5222, 5223, 5269, 5353, 5355, 5432, 5500, 5631, 5632, 5666,
+			5800, 5900, 6000, 6001, 6379, 6566, 6665, 6666, 6667, 6668,
+			6669, 6679, 6697, 6881, 6882, 6883, 6884, 6885, 6886, 6887,
+			6888, 6889, 6890, 6891, 6901, 6969, 6970, 7212, 7648, 8000,
+		}
+	}
 
+	if data.UseTopPorts {
+		data.UseTopPorts = raw.UseTopPorts
+		data.Port = append(data.Port, GetCommonPorts()...)
+	}
 }

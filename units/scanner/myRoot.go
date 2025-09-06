@@ -13,14 +13,14 @@ type Scanner interface {
 
 type ScannerRoot struct {
 	// icmpScanner Results
-	aliveHosts     []string
-	aliveHostCount int
+	AliveHosts     []string
+	AliveHostCount int
 
 	// tcpScanner Results
-	openPort map[string][]int
+	OpenPort map[string][]int
 
 	// serviceScanner Result
-	serviceDetails map[string][]serviceMid
+	ServiceDetails map[string][]serviceMid
 }
 
 type icmpTaskUnity struct {
@@ -49,8 +49,8 @@ type serviceResultUnity struct {
 	port        int
 }
 type serviceMid struct {
-	port        int
-	serviceInfo string
+	Port        int
+	ServiceInfo string
 }
 
 type icmpScanner struct {

@@ -11,7 +11,7 @@ func (root *serviceScanner) prepareTaskData(data *userCommandProcesser.UserCmdPr
 
 	/* 初始化Service扫描的所有参数 */
 
-	root.openPort = res.openPort
+	root.openPort = res.OpenPort
 	root.Thread = data.Thread
 	root.TimeOut = data.TimeOut
 	root.Task = make(chan serviceTaskUnity)
@@ -62,9 +62,9 @@ func (root *serviceScanner) Scanner(data *userCommandProcesser.UserCmdProcesser,
 	root.waitAllTaskFinish()
 
 	for result := range root.Result {
-		root.serviceDetails[result.ipAddr] = append(root.serviceDetails[result.ipAddr], serviceMid{port: result.port, serviceInfo: result.serviceInfo})
+		root.serviceDetails[result.ipAddr] = append(root.serviceDetails[result.ipAddr], serviceMid{Port: result.port, ServiceInfo: result.serviceInfo})
 	}
 
-	res.serviceDetails = root.serviceDetails
+	res.ServiceDetails = root.serviceDetails
 
 }

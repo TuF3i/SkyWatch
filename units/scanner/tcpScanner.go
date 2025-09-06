@@ -10,7 +10,7 @@ func (root *tcpScanner) prepareTaskData(data *userCommandProcesser.UserCmdProces
 
 	/* 初始化ICMP扫描的所有参数 */
 
-	root.IPList = res.aliveHosts
+	root.IPList = res.AliveHosts
 	root.Port = data.Port
 	root.Thread = data.Thread
 	root.TimeOut = data.TimeOut
@@ -67,6 +67,6 @@ func (root *tcpScanner) Scanner(data *userCommandProcesser.UserCmdProcesser, res
 		root.openPort[result.ipAddr] = append(root.openPort[result.ipAddr], result.port)
 	}
 
-	res.openPort = root.openPort
+	res.OpenPort = root.openPort
 
 }

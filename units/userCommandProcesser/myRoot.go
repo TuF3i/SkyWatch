@@ -25,6 +25,7 @@ type RawData struct {
 	UseTopPorts bool
 	Thread      int
 	TimeOut     int
+	IfArgs      []string
 }
 
 type CommandReceiver struct{}

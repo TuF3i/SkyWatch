@@ -1,12 +1,12 @@
 package vscan
 
 import (
+	logger "SkyWatch/thirdBody/gologger"
 	"SkyWatch/thirdBody/serviceScanLib/proberbyte"
 	"bytes"
 	"compress/gzip"
 	"crypto/tls"
 	"encoding/hex"
-	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -25,6 +25,8 @@ type VScan struct {
 	Probes []Probe
 
 	ProbesMapKName map[string]Probe
+
+	logs *logger.LocalLogger
 }
 
 type Match struct {
@@ -978,7 +980,7 @@ func (v *VScan) Tagetsacn(targetIP string) string {
 			info = "unknown"
 		}
 
-		fmt.Printf("%s:%d (%s)\n", result.IP, result.Port, info)
+		v.logs.Alert("%s:%d (%s)", result.IP, result.Port, info)
 
 	}
 
@@ -990,6 +992,10 @@ func (v *VScan) Init() {
 	proberContent := bytes.NewReader(proberbyte.GetProber())
 	proberReader, _ := gzip.NewReader(proberContent)
 	proberStr, _ := ioutil.ReadAll(proberReader)
+
+	v.logs = logger.NewLogger(1)
+	v.logs.Modular = "serviceScanLib"
+
 	v.parseProbesFromContent(string(proberStr))
 	v.parseProbesToMapKName(v.Probes)
 }

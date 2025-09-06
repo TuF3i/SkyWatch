@@ -1,14 +1,18 @@
 package main
 
 import (
+	"SkyWatch/units/resultBoard"
 	"SkyWatch/units/scanner"
 	"SkyWatch/units/userCommandProcesser"
-	"fmt"
 )
 
 func main() {
+	banner := resultBoard.ResultBoard{}
+	banner.Banner()
+
 	source := userCommandProcesser.RunCatcher()
 	res := scanner.RunScanner(source)
-	fmt.Printf("%v", source)
-	fmt.Printf("%v", res)
+	resultBoard.ShowRes(res)
+	//fmt.Printf("%v", source)
+	//fmt.Printf("%v", res)
 }
