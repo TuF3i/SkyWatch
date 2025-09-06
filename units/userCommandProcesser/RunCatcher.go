@@ -16,9 +16,7 @@ func RunCatcher() *UserCmdProcesser {
 	cmdRev := CommandReceiver{}
 	raw := cmdRev.CommandRev(&RawData{})
 
-	if len(raw.IfArgs) == 0 {
-		fmt.Println("Type \"SkyWatch -h\" for help!")
-	}
+	fmt.Println("Type \"SkyWatch -h\" for help!")
 
 	for _, r := range UserCmdCatcher {
 		r.RevCatcher(&data, raw)
