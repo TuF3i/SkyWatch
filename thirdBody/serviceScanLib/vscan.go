@@ -1,12 +1,12 @@
 package vscan
 
 import (
-	logger "SkyWatch/thirdBody/gologger"
 	"SkyWatch/thirdBody/serviceScanLib/proberbyte"
 	"bytes"
 	"compress/gzip"
 	"crypto/tls"
 	"encoding/hex"
+	logger "gitee.com/liumou_site/logger"
 	"io/ioutil"
 	"net"
 	"net/http"

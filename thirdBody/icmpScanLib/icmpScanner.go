@@ -1,8 +1,10 @@
 package icmpScanLib
 
 import (
-	"SkyWatch/thirdBody/gologger"
+	"gitee.com/liumou_site/logger"
+
 	"SkyWatch/thirdBody/icmpScanLib/goPingFixed"
+
 	"fmt"
 	"time"
 )

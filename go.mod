@@ -23,6 +23,8 @@ require (
 require github.com/donnie4w/gofer v0.1.8
 
 require (
+	gitee.com/liumou_site/logger v1.2.3 // indirect
+	github.com/fatih/color v1.18.0 // indirect
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
 	github.com/spf13/cast v1.9.2 // indirect

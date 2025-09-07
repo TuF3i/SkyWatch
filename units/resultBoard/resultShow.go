@@ -1,7 +1,7 @@
 package resultBoard
 
 import (
-	"SkyWatch/thirdBody/color"
+	"github.com/fatih/color"
 )
 
 func (root *ResultBoard) ResBoardInit() {

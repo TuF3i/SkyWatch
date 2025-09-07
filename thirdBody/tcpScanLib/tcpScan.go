@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	logger "SkyWatch/thirdBody/gologger"
+	logger "gitee.com/liumou_site/logger"
 )
 
 var logs *logger.LocalLogger = logger.NewLogger(1)

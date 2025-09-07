@@ -1,8 +1,8 @@
 package resultBoard
 
 import (
-	"SkyWatch/thirdBody/color"
 	"fmt"
+	"github.com/fatih/color"
 )
 
 func (banner_ *ResultBoard) Banner() {

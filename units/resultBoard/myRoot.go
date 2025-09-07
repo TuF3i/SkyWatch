@@ -1,6 +1,6 @@
 package resultBoard
 
-import "SkyWatch/thirdBody/color"
+import "github.com/fatih/color"
 
 type ResultBoard struct {
 	resultBelonging   *color.Color
