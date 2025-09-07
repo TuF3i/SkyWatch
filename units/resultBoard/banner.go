@@ -18,6 +18,6 @@ func (banner_ *ResultBoard) Banner() {
 	c.Println("=============================================")
 	d.Printf("Author: TuF3i\n")
 	d.Printf("Github: https://github.com/TuF3i/SkyWatch\n")
-	d.Printf("Version: 1.0.0-dev\n")
+	d.Printf("Version: 1.0.2-dev\n")
 	c.Println("=============================================")
 }
