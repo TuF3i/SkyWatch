@@ -726,9 +726,12 @@ func getHttpBanner(url string) (statsu bool, res HttpInfo) {
 
 func (v *VScan) scanWithProbes(target Target, probes *[]Probe) (Result, error) {
 	var result = Result{Target: target}
+	retry := 0
+	allowRetry := 5
 
 	for _, probe := range *probes {
 		var response []byte
+		retry++
 
 		probeData, _ := DecodeData(probe.Data)
 
@@ -736,6 +739,12 @@ func (v *VScan) scanWithProbes(target Target, probes *[]Probe) (Result, error) {
 
 		response, _ = grabResponse(addr, probeData)
 
+		if retry > allowRetry {
+			break
+		}
+		if len(response) == 0 {
+			continue
+		}
 		if len(response) > 0 {
 			found := false
 
@@ -917,19 +926,24 @@ func grabResponse(addr string, data []byte) ([]byte, error) {
 		}
 	}
 
-	conn.SetReadDeadline(time.Now().Add(time.Second * 2))
-	for true {
+	if err := conn.SetReadDeadline(time.Now().Add(time.Second * 2)); err != nil {
+		return response, err
+	}
+
+	for {
 		buff := make([]byte, 1024)
 		n, errRead := conn.Read(buff)
+		if n > 0 {
+			response = append(response, buff[:n]...)
+		} else {
+			break
+		}
 		if errRead != nil {
 			if len(response) > 0 {
 				break
 			} else {
 				return response, errRead
 			}
-		}
-		if n > 0 {
-			response = append(response, buff[:n]...)
 		}
 	}
 	return response, nil
@@ -938,6 +952,7 @@ func grabResponse(addr string, data []byte) ([]byte, error) {
 func (v *VScan) Tagetsacn(targetIP string) string {
 	var info string
 	result, err := v.Explore(targetIP)
+	//if result =
 	//mutex.Lock()
 	if err == nil {
 		if result.Service.Name == "http" {
